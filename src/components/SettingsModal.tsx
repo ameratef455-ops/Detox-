@@ -313,40 +313,59 @@ export default function SettingsModal({
                 </div>
               )}
 
-              {/* Install App Section - More prominent */}
+                  {/* Install App Section - More prominent */}
               <div className="pt-6 border-t border-white/5 space-y-4">
                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Application</label>
-                 <button 
-                    onClick={() => {
-                      if (onInstall && isInstallable) {
-                        onInstall();
-                      } else {
-                        const msg = "ميزة التثبيت كـ PWA معطلة داخل هذه النافذة (Iframe). للتثبيت:\n1. افتح التطبيق في نافذة/تبويب جديد (New Tab).\n2. في متصفح Chrome (للكمبيوتر أو الأندرويد)، سيظهر لك زر Install PWA أو من قائمة المتصفح.\n3. أجهزة آيفون (Safari): اضغط زر 'مشاركة' (Share) ثم 'إضافة للشاشة الرئيسية' (Add to Home Screen).";
-                        notify('info', msg);
-                        alert(msg); // Also alert so it definitely gets seen and pauses UI
-                      }
-                    }}
-                    className={`w-full flex items-center justify-between p-5 rounded-3xl transition-all group ${
-                      isInstallable 
-                        ? "bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20" 
-                        : "bg-white/5 border border-white/5 opacity-80"
-                    }`}
-                 >
-                    <div className="flex items-center space-x-4">
-                       <div className={`p-3 rounded-2xl text-white shadow-lg ${isInstallable ? "bg-emerald-500 shadow-emerald-500/20" : "bg-white/10"}`}>
-                          <Download size={20} />
-                       </div>
-                       <div className="text-left">
-                          <p className="text-sm font-bold text-white leading-tight">
-                            {isInstallable ? "Install Detox" : "طريقة تثبيت التطبيق"}
-                          </p>
-                          <p className={`text-[10px] uppercase tracking-widest mt-1 ${isInstallable ? "text-emerald-400" : "text-white/40"}`}>
-                            Get the full experience
-                          </p>
-                       </div>
-                    </div>
-                    {isInstallable && <ChevronDown size={16} className="text-emerald-400 animate-bounce" />}
-                 </button>
+                 
+                 <div className="space-y-3">
+                   {/* Open in New Tab Button (Crucial for PWA) */}
+                   <button 
+                     onClick={() => window.open(window.location.href, '_blank')}
+                     className="w-full flex items-center justify-between p-5 rounded-3xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all group"
+                   >
+                      <div className="flex items-center space-x-4 text-right" dir="rtl">
+                         <div className="p-3 rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+                            <ExternalLink size={20} />
+                         </div>
+                         <div>
+                            <p className="text-sm font-bold text-white leading-tight">فتح التطبيق في نافذة مستقلة</p>
+                            <p className="text-[10px] uppercase tracking-widest mt-1 text-blue-400">Open in New Tab</p>
+                         </div>
+                      </div>
+                      <ChevronDown size={14} className="text-blue-400 -rotate-90 hidden sm:block" />
+                   </button>
+
+                   <button 
+                      onClick={() => {
+                        if (onInstall && isInstallable) {
+                          onInstall();
+                        } else {
+                          const msg = "لتثبيت التطبيق (PWA):\n1. اضغط على الزر أعلاه لفتح التطبيق في نافذة مستقلة (بسبب قيود المتصفح داخل هذه النافذة).\n2. من شريط العنوان في Chrome، اضغط على أيقونة (Install/تثبيت).\n3. لمستخدمي آيفون: اضغط زر 'مشاركة' في Safari ثم 'إضافة للشاشة الرئيسية'.";
+                          notify('info', msg);
+                        }
+                      }}
+                      className={`w-full flex items-center justify-between p-5 rounded-3xl transition-all group ${
+                        isInstallable 
+                          ? "bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20" 
+                          : "bg-white/5 border border-white/5 opacity-80"
+                      }`}
+                   >
+                      <div className="flex items-center space-x-4 text-right" dir="rtl">
+                         <div className={`p-3 rounded-2xl text-white shadow-lg ${isInstallable ? "bg-emerald-500 shadow-emerald-500/20" : "bg-white/10"}`}>
+                            <Download size={20} />
+                         </div>
+                         <div>
+                            <p className="text-sm font-bold text-white leading-tight">
+                              {isInstallable ? "تثبيت التطبيق الآن" : "خطوات التثبيت"}
+                            </p>
+                            <p className={`text-[10px] uppercase tracking-widest mt-1 ${isInstallable ? "text-emerald-400" : "text-white/40"}`}>
+                              {isInstallable ? "Ready to Install" : "PWA Guide"}
+                            </p>
+                         </div>
+                      </div>
+                      {isInstallable && <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
+                   </button>
+                 </div>
               </div>
 
               {/* Data Management Section */}

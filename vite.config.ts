@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        injectRegister: 'auto',
+        injectRegister: 'inline',
         includeAssets: ['pwa-192x192.png', 'pwa-512x512.png'],
         manifest: {
           name: 'Detox Focus',
@@ -21,20 +21,34 @@ export default defineConfig(({ mode }) => {
           theme_color: '#0a0f0d',
           background_color: '#0a0f0d',
           display: 'standalone',
+          orientation: 'portrait',
           start_url: '/',
           id: '/',
+          scope: '/',
           icons: [
             {
               src: '/pwa-192x192.png',
               sizes: '192x192',
               type: 'image/png',
-              purpose: 'any maskable'
+              purpose: 'any'
+            },
+            {
+              src: '/pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'maskable'
             },
             {
               src: '/pwa-512x512.png',
               sizes: '512x512',
               type: 'image/png',
-              purpose: 'any maskable'
+              purpose: 'any'
+            },
+            {
+              src: '/pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable'
             }
           ]
         },
