@@ -24,12 +24,14 @@ export default defineConfig(({ mode }) => {
             {
               src: 'https://img.icons8.com/parakeet/192/experimental-leaf-parakeet.png',
               sizes: '192x192',
-              type: 'image/png'
+              type: 'image/png',
+              purpose: 'any maskable'
             },
             {
               src: 'https://img.icons8.com/parakeet/512/experimental-leaf-parakeet.png',
               sizes: '512x512',
-              type: 'image/png'
+              type: 'image/png',
+              purpose: 'any maskable'
             }
           ]
         },

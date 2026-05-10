@@ -14,20 +14,25 @@ interface AmbientNoiseProps {
   onMuteToggle: () => void;
   masterVolume: number;
   sleepModeVolumeFade?: number; // 0 to 1
+  notify: (type: any, message: string, onConfirm?: () => void) => void;
+  isAdmin: boolean;
+  setIsAdmin: (val: boolean) => void;
 }
 
 export default function AmbientNoise({ 
   isMuted, 
   onMuteToggle, 
   masterVolume, 
-  sleepModeVolumeFade = 1 
+  sleepModeVolumeFade = 1,
+  notify,
+  isAdmin,
+  setIsAdmin
 }: AmbientNoiseProps) {
   const [activeSounds, setActiveSounds] = useState<Set<string>>(new Set());
   const [binauralMode, setBinauralMode] = useState<BinauralMode>("none");
   const [unlockedSounds, setUnlockedSounds] = useState<Set<string>>(new Set());
   const [promoInput, setPromoInput] = useState("");
   const [showPromo, setShowPromo] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [dynamicCodes, setDynamicCodes] = useState<string[]>([]);
   
   const audioContext = useRef<AudioContext | null>(null);
@@ -49,17 +54,13 @@ export default function AmbientNoise({
     const savedDynamic = localStorage.getItem("detox_dynamic_codes");
     if (savedDynamic) setDynamicCodes(JSON.parse(savedDynamic));
 
-    if (localStorage.getItem("detox_admin_mode") === "true") {
-        setShowAdminPanel(true);
-    }
-
     // Live sync codes when added from settings
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "detox_dynamic_codes" && e.newValue) {
         setDynamicCodes(JSON.parse(e.newValue));
       }
       if (e.key === "detox_admin_mode") {
-        setShowAdminPanel(e.newValue === "true");
+        setIsAdmin(e.newValue === "true");
       }
     };
     window.addEventListener('storage', handleStorageChange);
@@ -69,18 +70,19 @@ export default function AmbientNoise({
   const handleUnlock = () => {
     const code = promoInput.toUpperCase().trim();
     
-    if (code === ADMIN_SECRET) {
-        setShowAdminPanel(true);
+    // Obfuscated check: ADMIN_ACCESS_2026
+    if (code === atob("QURNSU5fQUNDRVNTXzIwMjY=")) {
+        setIsAdmin(true);
         localStorage.setItem("detox_admin_mode", "true");
         setPromoInput("");
-        alert("Admin Access Granted! Control Center Unlocked.");
+        notify('success', "بنظام التحكم تم الدخول! Admin Control Center Unlocked.");
         return;
     }
 
     const usedCodes = JSON.parse(localStorage.getItem("detox_used_codes") || "[]");
 
     if (usedCodes.includes(code)) {
-      alert("This code has already been used on this device!");
+      notify('error', "هذا الكود تم استخدامه بالفعل على هذا الجهاز!");
       return;
     }
 
@@ -105,9 +107,9 @@ export default function AmbientNoise({
 
       setPromoInput("");
       setShowPromo(false);
-      alert("Successfully Unlocked Supporter Content! 🚀\nEnjoy the Deep Flow Mixes (One-time usage code applied).");
+      notify('success', "مبروك! تم تفعيل جميع المميزات الحصرية للأبد. 🎉");
     } else {
-      alert("Invalid Code. Support the project to get your unique key!");
+      notify('error', "كود غير صحيح. تأكد من الكود المكتوب.");
     }
   };
 
@@ -607,11 +609,11 @@ export default function AmbientNoise({
                 exit={{ opacity: 0, y: 10 }}
                 className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20"
             >
-                {showAdminPanel ? (
+                {isAdmin ? (
                     <div className="space-y-3">
                         <div className="flex items-center justify-between text-amber-500">
                             <span className="text-[10px] font-black uppercase tracking-widest">Admin Control Center</span>
-                            <button onClick={() => setShowAdminPanel(false)} className="text-[8px] border border-amber-500/20 px-2 py-0.5 rounded">Exit</button>
+                            <button onClick={() => setIsAdmin(false)} className="text-[8px] border border-amber-500/20 px-2 py-0.5 rounded">Exit</button>
                         </div>
                         <div className="flex space-x-2">
                            <input 

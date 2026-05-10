@@ -6,6 +6,7 @@ import TaskSolo from "./components/TaskSolo";
 import AmbientNoise from "./components/AmbientNoise";
 import SettingsModal from "./components/SettingsModal";
 import Introduction from "./components/Introduction";
+import Notification, { NotificationType } from "./components/Notification";
 import { Settings, Zap, Heart, Sparkles, Moon, Brain, PenLine, Volume2, VolumeX } from "lucide-react";
 
 interface Task {
@@ -22,6 +23,23 @@ export default function App() {
   const [showIntroduction, setShowIntroduction] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem("detox_admin_mode") === "true");
+  
+  // Notification state
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    type: NotificationType;
+    message: string;
+    onConfirm?: () => void;
+  }>({
+    show: false,
+    type: 'success',
+    message: ''
+  });
+
+  const notify = (type: NotificationType, message: string, onConfirm?: () => void) => {
+    setNotification({ show: true, type, message, onConfirm });
+  };
   
   // Audio state
   const [isMuted, setIsMuted] = useState(false);
@@ -213,6 +231,9 @@ export default function App() {
                 onMuteToggle={() => setIsMuted(!isMuted)} 
                 masterVolume={masterVolume}
                 sleepModeVolumeFade={volumeFade}
+                notify={notify}
+                isAdmin={isAdmin}
+                setIsAdmin={setIsAdmin}
             />
           </motion.div>
         )}
@@ -285,6 +306,14 @@ export default function App() {
         onUpdateSleep={(v) => { setSleepMinutes(v); localStorage.setItem("detox_sleep", v.toString()); }}
         isInstallable={isInstallable}
         onInstall={installApp}
+        notify={notify}
+        isAdmin={isAdmin}
+        setIsAdmin={setIsAdmin}
+      />
+
+      <Notification 
+        {...notification}
+        onClose={() => setNotification(prev => ({ ...prev, show: false }))}
       />
       
       {/* Immersive Minimize Overlay */}

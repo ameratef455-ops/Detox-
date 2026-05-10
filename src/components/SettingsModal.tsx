@@ -13,6 +13,9 @@ interface SettingsModalProps {
   onUpdateSleep: (val: number) => void;
   isInstallable?: boolean;
   onInstall?: () => void;
+  notify: (type: any, message: string, onConfirm?: () => void) => void;
+  isAdmin: boolean;
+  setIsAdmin: (val: boolean) => void;
 }
 
 export default function SettingsModal({
@@ -25,9 +28,11 @@ export default function SettingsModal({
   onUpdateBreak,
   onUpdateSleep,
   isInstallable,
-  onInstall
+  onInstall,
+  notify,
+  isAdmin,
+  setIsAdmin
 }: SettingsModalProps) {
-  const [isAdmin, setIsAdmin] = useState(false);
   const [dynamicCodes, setDynamicCodes] = useState<string[]>([]);
   const [isPremium, setIsPremium] = useState(false);
 
@@ -35,8 +40,6 @@ export default function SettingsModal({
     if (isOpen) {
       const unlocked = localStorage.getItem("detox_unlocked");
       setIsPremium(unlocked ? JSON.parse(unlocked).includes("PREMIUM_ALL") : false);
-      
-      setIsAdmin(localStorage.getItem("detox_admin_mode") === "true");
       
       const saved = localStorage.getItem("detox_dynamic_codes");
       setDynamicCodes(saved ? JSON.parse(saved) : []);
@@ -75,10 +78,10 @@ export default function SettingsModal({
         if (data.intro) localStorage.setItem("detox_intro_seen", data.intro);
         if (data.unlocked) localStorage.setItem("detox_unlocked", data.unlocked);
         if (data.used_codes) localStorage.setItem("detox_used_codes", data.used_codes);
-        alert("Data imported successfully! Refreshing...");
-        window.location.reload();
+        notify('success', "تم استعادة البيانات بنجاح! جاري التحديث...");
+        setTimeout(() => window.location.reload(), 2000);
       } catch (err) {
-        alert("Invalid backup file.");
+        notify('error', "ملف النسخة الاحتياطية غير صالح.");
       }
     };
     reader.readAsText(file);
@@ -219,10 +222,14 @@ export default function SettingsModal({
                            className="bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-[8px] text-white/40 focus:text-white/80 outline-none w-20 text-right"
                            onKeyDown={(e) => {
                              if (e.key === 'Enter') {
-                               if ((e.target as HTMLInputElement).value === "ADMIN_ACCESS_2026") {
+                               const val = (e.target as HTMLInputElement).value.toUpperCase();
+                               // Obfuscated check: ADMIN_ACCESS_2026
+                               if (val === atob("QURNSU5fQUNDRVNTXzIwMjY=")) {
                                  localStorage.setItem("detox_admin_mode", "true");
                                  setIsAdmin(true);
-                                 alert("Admin Mode Enabled!");
+                                 notify('success', "Admin Mode Enabled!");
+                               } else {
+                                 notify('error', "كود غير صحيح.");
                                }
                                (e.target as HTMLInputElement).value = "";
                              }
@@ -280,7 +287,7 @@ export default function SettingsModal({
                                 setDynamicCodes(updated);
                                 localStorage.setItem("detox_dynamic_codes", JSON.stringify(updated));
                                 (e.target as HTMLInputElement).value = "";
-                                alert("Added!");
+                                notify('success', "تم إضافة كود جديد بنجاح!");
                               }
                             }}
                             className="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-2 text-xs uppercase outline-none focus:ring-1 focus:ring-amber-500"
@@ -291,10 +298,13 @@ export default function SettingsModal({
                             <span key={c} className="text-[9px] bg-white/5 border border-white/5 px-2 py-1 rounded-lg font-mono text-white/60 flex items-center gap-2">
                                {c}
                                <button onClick={() => {
-                                  const updated = dynamicCodes.filter(x => x !== c);
-                                  setDynamicCodes(updated);
-                                  localStorage.setItem("detox_dynamic_codes", JSON.stringify(updated));
-                               }} className="text-red-400">×</button>
+                                  notify('confirm', `هل أنت متأكد من حذف الكود ${c}؟`, () => {
+                                      const updated = dynamicCodes.filter(x => x !== c);
+                                      setDynamicCodes(updated);
+                                      localStorage.setItem("detox_dynamic_codes", JSON.stringify(updated));
+                                      notify('success', "تم حذف الكود.");
+                                  });
+                               }} className="text-red-400 p-1 hover:bg-black/20 rounded">×</button>
                             </span>
                          ))}
                          {dynamicCodes.length === 0 && <p className="text-[8px] text-white/20 uppercase tracking-widest leading-none">لا يوجد أكواد نشطة</p>}
@@ -311,7 +321,7 @@ export default function SettingsModal({
                       if (onInstall && isInstallable) {
                         onInstall();
                       } else {
-                        alert("للتحميل: اضغط على أيقونة 'مشاركة' في متصفحك واختار 'إضافة للشاشة الرئيسية'.");
+                        notify('info', "للتحميل: اضغط على أيقونة 'مشاركة' في متصفحك واختار 'إضافة للشاشة الرئيسية'.");
                       }
                     }}
                     className={`w-full flex items-center justify-between p-5 rounded-3xl transition-all group ${
