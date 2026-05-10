@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        injectRegister: 'inline',
+        injectRegister: 'auto',
         includeAssets: ['pwa-192x192.png', 'pwa-512x512.png'],
         manifest: {
           name: 'Detox Focus',
