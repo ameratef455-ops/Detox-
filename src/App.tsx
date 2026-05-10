@@ -20,6 +20,8 @@ export default function App() {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [showIntroduction, setShowIntroduction] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
   
   // Audio state
   const [isMuted, setIsMuted] = useState(false);
@@ -50,7 +52,26 @@ export default function App() {
     if (savedSleep) setSleepMinutes(parseInt(savedSleep));
     if (savedHearts) setHearts(parseInt(savedHearts));
     if (!introSeen) setShowIntroduction(true);
+
+    const handleBeforeInstall = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
   }, []);
+
+  const installApp = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+      setIsInstallable(false);
+    }
+  };
 
   const handleIntroComplete = () => {
     localStorage.setItem("detox_intro_seen", "true");
@@ -262,6 +283,8 @@ export default function App() {
         onUpdateFocus={(v) => { setFocusMinutes(v); localStorage.setItem("detox_focus", v.toString()); }}
         onUpdateBreak={(v) => { setBreakMinutes(v); localStorage.setItem("detox_break", v.toString()); }}
         onUpdateSleep={(v) => { setSleepMinutes(v); localStorage.setItem("detox_sleep", v.toString()); }}
+        isInstallable={isInstallable}
+        onInstall={installApp}
       />
       
       {/* Immersive Minimize Overlay */}

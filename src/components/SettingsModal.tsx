@@ -11,6 +11,8 @@ interface SettingsModalProps {
   onUpdateFocus: (val: number) => void;
   onUpdateBreak: (val: number) => void;
   onUpdateSleep: (val: number) => void;
+  isInstallable?: boolean;
+  onInstall?: () => void;
 }
 
 export default function SettingsModal({
@@ -21,11 +23,19 @@ export default function SettingsModal({
   sleepMinutes,
   onUpdateFocus,
   onUpdateBreak,
-  onUpdateSleep
+  onUpdateSleep,
+  isInstallable,
+  onInstall
 }: SettingsModalProps) {
   const [isPremium, setIsPremium] = useState(() => {
     const unlocked = localStorage.getItem("detox_unlocked");
     return unlocked && JSON.parse(unlocked).includes("PREMIUM_ALL");
+  });
+
+  const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem("detox_admin_mode") === "true");
+  const [dynamicCodes, setDynamicCodes] = useState<string[]>(() => {
+    const saved = localStorage.getItem("detox_dynamic_codes");
+    return saved ? JSON.parse(saved) : [];
   });
 
   const exportData = () => {
@@ -214,6 +224,73 @@ export default function SettingsModal({
                    </p>
                 </div>
               </div>
+
+              {/* Admin Panel (If Supporter Section were replaced, we put it here) */}
+              {isAdmin && (
+                <div className="pt-6 border-t border-amber-500/20 space-y-4" dir="rtl">
+                   <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/60 block text-right">Admin Control Center</label>
+                   <div className="bg-amber-500/5 border border-amber-500/10 rounded-3xl p-6 space-y-4">
+                      <div className="flex space-x-reverse space-x-2">
+                         <input 
+                            id="admin-new-code"
+                            type="text" 
+                            placeholder="كود جديد..."
+                            className="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-2 text-xs uppercase outline-none focus:ring-1 focus:ring-amber-500"
+                         />
+                         <button 
+                            onClick={() => {
+                               const input = document.getElementById('admin-new-code') as HTMLInputElement;
+                               const code = input.value.toUpperCase().trim();
+                               if (!code) return;
+                               const updated = [...dynamicCodes, code];
+                               setDynamicCodes(updated);
+                               localStorage.setItem("detox_dynamic_codes", JSON.stringify(updated));
+                               input.value = "";
+                               alert("تم إضافة الكود بنجاح!");
+                            }}
+                            className="px-4 py-2 bg-amber-500 text-black rounded-xl font-black text-[10px] uppercase"
+                         >
+                            Add
+                         </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                         {dynamicCodes.map(c => (
+                            <span key={c} className="text-[9px] bg-white/5 border border-white/5 px-2 py-1 rounded-lg font-mono text-white/60 flex items-center gap-2">
+                               {c}
+                               <button onClick={() => {
+                                  const updated = dynamicCodes.filter(x => x !== c);
+                                  setDynamicCodes(updated);
+                                  localStorage.setItem("detox_dynamic_codes", JSON.stringify(updated));
+                               }} className="text-red-400">×</button>
+                            </span>
+                         ))}
+                         {dynamicCodes.length === 0 && <p className="text-[8px] text-white/20 uppercase tracking-widest">لا يوجد أكواد نشطة</p>}
+                      </div>
+                   </div>
+                </div>
+              )}
+
+              {/* Install App Section */}
+              {isInstallable && (
+                <div className="pt-6 border-t border-white/5 space-y-4">
+                   <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Application</label>
+                   <button 
+                      onClick={onInstall}
+                      className="w-full flex items-center justify-between p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all group"
+                   >
+                      <div className="flex items-center space-x-4">
+                         <div className="p-3 rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
+                            <Rocket size={20} />
+                         </div>
+                         <div className="text-left">
+                            <p className="text-sm font-bold text-white leading-tight">Install Detox</p>
+                            <p className="text-[10px] text-emerald-400 uppercase tracking-widest mt-1">Get the full experience</p>
+                         </div>
+                      </div>
+                      <ChevronDown size={16} className="text-emerald-400 animate-bounce" />
+                   </button>
+                </div>
+              )}
 
               {/* Data Management Section */}
               <div className="pt-6 border-t border-white/5 space-y-4">

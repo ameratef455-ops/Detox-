@@ -48,6 +48,10 @@ export default function AmbientNoise({
 
     const savedDynamic = localStorage.getItem("detox_dynamic_codes");
     if (savedDynamic) setDynamicCodes(JSON.parse(savedDynamic));
+
+    if (localStorage.getItem("detox_admin_mode") === "true") {
+        // Option to pre-enable admin panel view if needed, but let's keep it for when promo is opened
+    }
   }, []);
 
   const handleUnlock = () => {
@@ -55,7 +59,9 @@ export default function AmbientNoise({
     
     if (code === ADMIN_SECRET) {
         setShowAdminPanel(true);
+        localStorage.setItem("detox_admin_mode", "true");
         setPromoInput("");
+        alert("Admin Access Granted! Control Center Unlocked.");
         return;
     }
 
