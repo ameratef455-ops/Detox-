@@ -321,7 +321,9 @@ export default function SettingsModal({
                       if (onInstall && isInstallable) {
                         onInstall();
                       } else {
-                        notify('info', "لتحميل التطبيق كـ PWA: افتح التطبيق في نافذة منفصلة (New Tab) ثم اضغط على 'Install' من المتصفح.");
+                        const msg = "ميزة التثبيت كـ PWA معطلة داخل هذه النافذة (Iframe). للتثبيت:\n1. افتح التطبيق في نافذة/تبويب جديد (New Tab).\n2. في متصفح Chrome (للكمبيوتر أو الأندرويد)، سيظهر لك زر Install PWA أو من قائمة المتصفح.\n3. أجهزة آيفون (Safari): اضغط زر 'مشاركة' (Share) ثم 'إضافة للشاشة الرئيسية' (Add to Home Screen).";
+                        notify('info', msg);
+                        alert(msg); // Also alert so it definitely gets seen and pauses UI
                       }
                     }}
                     className={`w-full flex items-center justify-between p-5 rounded-3xl transition-all group ${
