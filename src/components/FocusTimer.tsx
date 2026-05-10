@@ -57,25 +57,53 @@ export default function FocusTimer({
     }
   }, []);
 
+  const endTimeRef = useRef<number | null>(null);
+  const isActiveRef = useRef(isActive);
+  
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
+
   useEffect(() => {
     workerRef.current = new Worker(new URL("../timerWorker.ts", import.meta.url), { type: "module" });
     workerRef.current.onmessage = (e: MessageEvent) => {
-      if (e.data === 'tick') setTimeLeft(prev => (prev <= 1 ? 0 : prev - 1));
+      if (e.data === 'tick' && isActiveRef.current && endTimeRef.current) {
+        const remaining = Math.round((endTimeRef.current - Date.now()) / 1000);
+        setTimeLeft(remaining <= 0 ? 0 : remaining);
+      }
     };
     return () => workerRef.current?.terminate();
   }, []);
 
-  useEffect(() => {
-    totalSecondsRef.current = getInitialTime();
-    if (!isActive) {
-      setTimeLeft(getInitialTime());
-    }
-  }, [getInitialTime, isActive]);
+  const initialTimeRef = useRef(getInitialTime());
 
   useEffect(() => {
-    if (isActive) workerRef.current?.postMessage('start');
-    else workerRef.current?.postMessage('stop');
-  }, [isActive]);
+    const newInitial = getInitialTime();
+    totalSecondsRef.current = newInitial;
+    setTimeLeft(prev => {
+      if (!isActive && prev === initialTimeRef.current) {
+         return newInitial;
+      }
+      return prev;
+    });
+    initialTimeRef.current = newInitial;
+  }, [getInitialTime]);
+
+  useEffect(() => {
+    setTimeLeft(getInitialTime());
+    initialTimeRef.current = getInitialTime();
+    setIsActive(false);
+  }, [mode]);
+
+  useEffect(() => {
+    if (isActive) {
+      endTimeRef.current = Date.now() + timeLeft * 1000;
+      workerRef.current?.postMessage('start');
+    } else {
+      endTimeRef.current = null;
+      workerRef.current?.postMessage('stop');
+    }
+  }, [isActive]); // Note: DO NOT include timeLeft in deps, we only want to set endTimeRef when isActive goes from false to true
 
   const toggleTimer = () => setIsActive(!isActive);
 

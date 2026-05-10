@@ -47,7 +47,7 @@ export default function Notification({
   return (
     <AnimatePresence>
       {show && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 pointer-events-none">
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4 pointer-events-none">
           {type === 'confirm' && (
             <motion.div 
               initial={{ opacity: 0 }}
