@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        injectRegister: 'auto',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
           name: 'Detox Focus',
@@ -20,15 +21,17 @@ export default defineConfig(({ mode }) => {
           theme_color: '#0a0f0d',
           background_color: '#0a0f0d',
           display: 'standalone',
+          start_url: '/',
+          id: '/',
           icons: [
             {
-              src: 'https://img.icons8.com/parakeet/192/experimental-leaf-parakeet.png',
+              src: '/pwa-192x192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any maskable'
             },
             {
-              src: 'https://img.icons8.com/parakeet/512/experimental-leaf-parakeet.png',
+              src: '/pwa-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any maskable'

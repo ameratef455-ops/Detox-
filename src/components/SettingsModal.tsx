@@ -321,7 +321,7 @@ export default function SettingsModal({
                       if (onInstall && isInstallable) {
                         onInstall();
                       } else {
-                        notify('info', "للتحميل: اضغط على أيقونة 'مشاركة' في متصفحك واختار 'إضافة للشاشة الرئيسية'.");
+                        notify('info', "لتحميل التطبيق كـ PWA: افتح التطبيق في نافذة منفصلة (New Tab) ثم اضغط على 'Install' من المتصفح.");
                       }
                     }}
                     className={`w-full flex items-center justify-between p-5 rounded-3xl transition-all group ${
