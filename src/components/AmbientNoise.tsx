@@ -50,8 +50,20 @@ export default function AmbientNoise({
     if (savedDynamic) setDynamicCodes(JSON.parse(savedDynamic));
 
     if (localStorage.getItem("detox_admin_mode") === "true") {
-        // Option to pre-enable admin panel view if needed, but let's keep it for when promo is opened
+        setShowAdminPanel(true);
     }
+
+    // Live sync codes when added from settings
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "detox_dynamic_codes" && e.newValue) {
+        setDynamicCodes(JSON.parse(e.newValue));
+      }
+      if (e.key === "detox_admin_mode") {
+        setShowAdminPanel(e.newValue === "true");
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleUnlock = () => {

@@ -27,16 +27,21 @@ export default function SettingsModal({
   isInstallable,
   onInstall
 }: SettingsModalProps) {
-  const [isPremium, setIsPremium] = useState(() => {
-    const unlocked = localStorage.getItem("detox_unlocked");
-    return unlocked && JSON.parse(unlocked).includes("PREMIUM_ALL");
-  });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [dynamicCodes, setDynamicCodes] = useState<string[]>([]);
+  const [isPremium, setIsPremium] = useState(false);
 
-  const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem("detox_admin_mode") === "true");
-  const [dynamicCodes, setDynamicCodes] = useState<string[]>(() => {
-    const saved = localStorage.getItem("detox_dynamic_codes");
-    return saved ? JSON.parse(saved) : [];
-  });
+  React.useEffect(() => {
+    if (isOpen) {
+      const unlocked = localStorage.getItem("detox_unlocked");
+      setIsPremium(unlocked ? JSON.parse(unlocked).includes("PREMIUM_ALL") : false);
+      
+      setIsAdmin(localStorage.getItem("detox_admin_mode") === "true");
+      
+      const saved = localStorage.getItem("detox_dynamic_codes");
+      setDynamicCodes(saved ? JSON.parse(saved) : []);
+    }
+  }, [isOpen]);
 
   const exportData = () => {
     const data = {
@@ -206,6 +211,27 @@ export default function SettingsModal({
                       لو Detox ساعدك تستعيد تركيزك، فدعمك هو الوقود اللي بيخلينا نستمر. بمبلغ بسيط تقدر تفتح "Deep Flow Mixes" وأصوات مخصصة لحالات التركيز العالي، بالإضافة لدعم تطوير البرنامج.
                    </p>
                    
+                   {!isAdmin && (
+                      <div className="flex items-center justify-end space-x-reverse space-x-2">
+                         <input 
+                           type="password" 
+                           placeholder="كود سري..."
+                           className="bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-[8px] text-white/40 focus:text-white/80 outline-none w-20 text-right"
+                           onKeyDown={(e) => {
+                             if (e.key === 'Enter') {
+                               if ((e.target as HTMLInputElement).value === "ADMIN_ACCESS_2026") {
+                                 localStorage.setItem("detox_admin_mode", "true");
+                                 setIsAdmin(true);
+                                 alert("Admin Mode Enabled!");
+                               }
+                               (e.target as HTMLInputElement).value = "";
+                             }
+                           }}
+                         />
+                         <span className="text-[8px] text-white/10 uppercase font-bold">Admin Only</span>
+                      </div>
+                   )}
+
                    <div className="bg-black/20 rounded-2xl p-4 border border-white/5 text-center">
                       <p className="text-[10px] font-bold text-emerald-400/60 uppercase tracking-widest mb-1">فودافون كاش (التحويل مباشر):</p>
                       <p className="text-lg font-mono font-black text-white tracking-widest">01282920387</p>
@@ -214,7 +240,7 @@ export default function SettingsModal({
                       href="https://wa.me/201282920387" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center space-x-reverse space-x-2 w-full py-3 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-500 transition-all active:scale-95 shadow-lg shadow-emerald-500/10"
+                      className="flex items-center justify-center space-x-reverse space-x-2 w-full py-3 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-50 transition-all active:scale-95 shadow-lg shadow-emerald-500/10"
                    >
                       <MessageSquare size={18} />
                       <span>ابعت السكرين شوت واستلم كود التفعيل</span>
@@ -225,33 +251,40 @@ export default function SettingsModal({
                 </div>
               </div>
 
-              {/* Admin Panel (If Supporter Section were replaced, we put it here) */}
+              {/* Admin Panel */}
               {isAdmin && (
                 <div className="pt-6 border-t border-amber-500/20 space-y-4" dir="rtl">
-                   <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/60 block text-right">Admin Control Center</label>
+                   <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/60 block text-right">Admin Control Center</label>
+                      <button 
+                        onClick={() => {
+                          localStorage.removeItem("detox_admin_mode");
+                          setIsAdmin(false);
+                        }}
+                        className="text-[8px] text-white/20 hover:text-red-400 transition-colors uppercase font-bold"
+                      >
+                        Exit Admin
+                      </button>
+                   </div>
                    <div className="bg-amber-500/5 border border-amber-500/10 rounded-3xl p-6 space-y-4">
                       <div className="flex space-x-reverse space-x-2">
                          <input 
                             id="admin-new-code"
                             type="text" 
                             placeholder="كود جديد..."
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const code = (e.target as HTMLInputElement).value.toUpperCase().trim();
+                                if (!code) return;
+                                const updated = [...dynamicCodes, code];
+                                setDynamicCodes(updated);
+                                localStorage.setItem("detox_dynamic_codes", JSON.stringify(updated));
+                                (e.target as HTMLInputElement).value = "";
+                                alert("Added!");
+                              }
+                            }}
                             className="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-2 text-xs uppercase outline-none focus:ring-1 focus:ring-amber-500"
                          />
-                         <button 
-                            onClick={() => {
-                               const input = document.getElementById('admin-new-code') as HTMLInputElement;
-                               const code = input.value.toUpperCase().trim();
-                               if (!code) return;
-                               const updated = [...dynamicCodes, code];
-                               setDynamicCodes(updated);
-                               localStorage.setItem("detox_dynamic_codes", JSON.stringify(updated));
-                               input.value = "";
-                               alert("تم إضافة الكود بنجاح!");
-                            }}
-                            className="px-4 py-2 bg-amber-500 text-black rounded-xl font-black text-[10px] uppercase"
-                         >
-                            Add
-                         </button>
                       </div>
                       <div className="flex flex-wrap gap-2">
                          {dynamicCodes.map(c => (
@@ -264,33 +297,45 @@ export default function SettingsModal({
                                }} className="text-red-400">×</button>
                             </span>
                          ))}
-                         {dynamicCodes.length === 0 && <p className="text-[8px] text-white/20 uppercase tracking-widest">لا يوجد أكواد نشطة</p>}
+                         {dynamicCodes.length === 0 && <p className="text-[8px] text-white/20 uppercase tracking-widest leading-none">لا يوجد أكواد نشطة</p>}
                       </div>
                    </div>
                 </div>
               )}
 
-              {/* Install App Section */}
-              {isInstallable && (
-                <div className="pt-6 border-t border-white/5 space-y-4">
-                   <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Application</label>
-                   <button 
-                      onClick={onInstall}
-                      className="w-full flex items-center justify-between p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all group"
-                   >
-                      <div className="flex items-center space-x-4">
-                         <div className="p-3 rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
-                            <Rocket size={20} />
-                         </div>
-                         <div className="text-left">
-                            <p className="text-sm font-bold text-white leading-tight">Install Detox</p>
-                            <p className="text-[10px] text-emerald-400 uppercase tracking-widest mt-1">Get the full experience</p>
-                         </div>
-                      </div>
-                      <ChevronDown size={16} className="text-emerald-400 animate-bounce" />
-                   </button>
-                </div>
-              )}
+              {/* Install App Section - More prominent */}
+              <div className="pt-6 border-t border-white/5 space-y-4">
+                 <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Application</label>
+                 <button 
+                    onClick={() => {
+                      if (onInstall && isInstallable) {
+                        onInstall();
+                      } else {
+                        alert("للتحميل: اضغط على أيقونة 'مشاركة' في متصفحك واختار 'إضافة للشاشة الرئيسية'.");
+                      }
+                    }}
+                    className={`w-full flex items-center justify-between p-5 rounded-3xl transition-all group ${
+                      isInstallable 
+                        ? "bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20" 
+                        : "bg-white/5 border border-white/5 opacity-80"
+                    }`}
+                 >
+                    <div className="flex items-center space-x-4">
+                       <div className={`p-3 rounded-2xl text-white shadow-lg ${isInstallable ? "bg-emerald-500 shadow-emerald-500/20" : "bg-white/10"}`}>
+                          <Download size={20} />
+                       </div>
+                       <div className="text-left">
+                          <p className="text-sm font-bold text-white leading-tight">
+                            {isInstallable ? "Install Detox" : "طريقة تثبيت التطبيق"}
+                          </p>
+                          <p className={`text-[10px] uppercase tracking-widest mt-1 ${isInstallable ? "text-emerald-400" : "text-white/40"}`}>
+                            Get the full experience
+                          </p>
+                       </div>
+                    </div>
+                    {isInstallable && <ChevronDown size={16} className="text-emerald-400 animate-bounce" />}
+                 </button>
+              </div>
 
               {/* Data Management Section */}
               <div className="pt-6 border-t border-white/5 space-y-4">

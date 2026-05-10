@@ -22,12 +22,12 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           icons: [
             {
-              src: 'pwa-192x192.png',
+              src: 'https://img.icons8.com/parakeet/192/experimental-leaf-parakeet.png',
               sizes: '192x192',
               type: 'image/png'
             },
             {
-              src: 'pwa-512x512.png',
+              src: 'https://img.icons8.com/parakeet/512/experimental-leaf-parakeet.png',
               sizes: '512x512',
               type: 'image/png'
             }

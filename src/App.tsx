@@ -147,7 +147,7 @@ export default function App() {
       {!isImmersive && (
         <header className="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-50">
           <div className="flex items-center space-x-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-colors duration-1000 ${currentThemeColor()}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-1000 ${currentThemeColor()}`}>
               <Zap size={20} className="text-white fill-white" />
             </div>
             <div>
