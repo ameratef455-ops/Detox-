@@ -1,0 +1,258 @@
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Play, Pause, RotateCcw, Coffee, Focus, Maximize2, Minimize2, Moon, Sun, ArrowRight } from "lucide-react";
+
+export type AppMode = "focus" | "break" | "sleep";
+
+interface FocusTimerProps {
+  focusMinutes: number;
+  breakMinutes: number;
+  sleepMinutes: number;
+  mode: AppMode;
+  onModeChange: (mode: AppMode) => void;
+  onSessionComplete: (mode: AppMode) => void;
+  isImmersive: boolean;
+  onToggleImmersive: () => void;
+  onTimeUpdate: (secondsLeft: number, totalSeconds: number) => void;
+}
+
+export default function FocusTimer({ 
+  focusMinutes, 
+  breakMinutes, 
+  sleepMinutes,
+  mode,
+  onModeChange,
+  onSessionComplete,
+  isImmersive,
+  onToggleImmersive,
+  onTimeUpdate
+}: FocusTimerProps) {
+  const getInitialTime = useCallback(() => {
+    if (mode === "focus") return focusMinutes * 60;
+    if (mode === "break") return breakMinutes * 60;
+    return sleepMinutes * 60;
+  }, [mode, focusMinutes, breakMinutes, sleepMinutes]);
+
+  const [timeLeft, setTimeLeft] = useState(getInitialTime());
+  const [isActive, setIsActive] = useState(false);
+  const totalSecondsRef = useRef(getInitialTime());
+  const workerRef = useRef<Worker | null>(null);
+
+  const playAlert = useCallback(() => {
+    try {
+      const audioContent = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioContent.createOscillator();
+      const envelope = audioContent.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, audioContent.currentTime);
+      envelope.gain.setValueAtTime(0, audioContent.currentTime);
+      envelope.gain.linearRampToValueAtTime(0.2, audioContent.currentTime + 0.1);
+      envelope.gain.exponentialRampToValueAtTime(0.001, audioContent.currentTime + 1);
+      osc.connect(envelope);
+      envelope.connect(audioContent.destination);
+      osc.start();
+      osc.stop(audioContent.currentTime + 1);
+    } catch (e) {
+      console.error("Audio alert error", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    workerRef.current = new Worker(new URL("../timerWorker.ts", import.meta.url), { type: "module" });
+    workerRef.current.onmessage = (e: MessageEvent) => {
+      if (e.data === 'tick') setTimeLeft(prev => (prev <= 1 ? 0 : prev - 1));
+    };
+    return () => workerRef.current?.terminate();
+  }, []);
+
+  useEffect(() => {
+    totalSecondsRef.current = getInitialTime();
+    if (!isActive) {
+      setTimeLeft(getInitialTime());
+    }
+  }, [getInitialTime, isActive]);
+
+  useEffect(() => {
+    if (isActive) workerRef.current?.postMessage('start');
+    else workerRef.current?.postMessage('stop');
+  }, [isActive]);
+
+  const toggleTimer = () => setIsActive(!isActive);
+
+  const resetTimer = useCallback(() => {
+    setIsActive(false);
+    setTimeLeft(getInitialTime());
+    workerRef.current?.postMessage('stop');
+  }, [getInitialTime]);
+
+  useEffect(() => {
+    onTimeUpdate(timeLeft, totalSecondsRef.current);
+    
+    if (timeLeft === 0 && isActive) {
+      setIsActive(false);
+      playAlert();
+      onSessionComplete(mode);
+      
+      // Auto-transition
+      if (mode === "focus") {
+        onModeChange("break");
+      } else if (mode === "break") {
+        onModeChange("focus");
+      } else {
+        onModeChange("focus");
+      }
+    }
+  }, [timeLeft, isActive, mode, onModeChange, onSessionComplete, playAlert, onTimeUpdate]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const progress = timeLeft / totalSecondsRef.current;
+
+  const getThemeColor = () => {
+    if (mode === "focus") return "text-emerald-500";
+    if (mode === "break") return "text-blue-400";
+    return "text-indigo-400";
+  };
+
+  const getRadialColor = () => {
+    if (mode === "focus") return "rgba(16, 185, 129, 0.2)";
+    if (mode === "break") return "rgba(96, 165, 250, 0.2)";
+    return "rgba(129, 140, 248, 0.2)";
+  };
+
+  return (
+    <div className={`relative transition-all duration-1000 ${isImmersive ? "fixed inset-0 z-[100] bg-black flex items-center justify-center" : "w-full"}`}>
+      
+      {/* Background Glow for Immersive Mode */}
+      <AnimatePresence>
+        {isImmersive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 overflow-hidden pointer-events-none"
+          >
+            <motion.div 
+               animate={{ 
+                  scale: [1, 1.1, 1],
+                  opacity: [0.3, 0.4, 0.3]
+               }}
+               transition={{ duration: 8, repeat: Infinity }}
+               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] rounded-full blur-[160px]"
+               style={{ background: `radial-gradient(circle, ${getRadialColor()} 0%, transparent 70%)` }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className={`flex flex-col items-center justify-center space-y-12 p-12 transition-all duration-700 ${isImmersive ? "scale-125" : "rounded-[3rem] bg-white/5 backdrop-blur-3xl border border-white/10"}`}>
+        
+        {/* Mode Selector */}
+        <div className="flex bg-white/5 p-1 rounded-full border border-white/5">
+          {(["focus", "break", "sleep"] as AppMode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => { onModeChange(m); setIsActive(false); }}
+              className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+                mode === m 
+                  ? "bg-white text-black shadow-lg" 
+                  : "text-white/30 hover:text-white/60"
+              }`}
+            >
+              {m === "sleep" ? <Moon size={14} className="inline mr-1" /> : null}
+              {m}
+            </button>
+          ))}
+        </div>
+
+        {/* Timer Circle */}
+        <div className="relative flex items-center justify-center w-80 h-80 group">
+          <svg className="w-full h-full transform -rotate-90 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+            <circle
+              cx="160"
+              cy="160"
+              r="150"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="transparent"
+              className="text-white/5"
+            />
+            <motion.circle
+              cx="160"
+              cy="160"
+              r="150"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="transparent"
+              strokeDasharray={2 * Math.PI * 150}
+              initial={{ strokeDashoffset: 0 }}
+              animate={{ strokeDashoffset: (1 - progress) * (2 * Math.PI * 150) }}
+              transition={{ duration: 1, ease: "linear" }}
+              className={getThemeColor()}
+            />
+          </svg>
+          
+          <div className="absolute flex flex-col items-center">
+            <motion.div 
+               key={timeLeft}
+               initial={{ y: 5, opacity: 0 }}
+               animate={{ y: 0, opacity: 1 }}
+               className="text-8xl font-thin tracking-tighter text-white font-mono"
+            >
+              {formatTime(timeLeft)}
+            </motion.div>
+            <div className={`mt-2 flex items-center space-x-2 transition-opacity ${isActive ? "opacity-30" : "opacity-0"}`}>
+               <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+               <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-white">Active</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center space-x-10">
+          <button
+            onClick={onToggleImmersive}
+            className="p-4 rounded-full bg-white/5 text-white/30 hover:bg-white/10 hover:text-white transition-all transform hover:scale-110"
+            title="Focus Mode"
+          >
+            {isImmersive ? <Minimize2 size={24} /> : <Maximize2 size={24} />}
+          </button>
+          
+          <button
+            onClick={toggleTimer}
+            className={`w-24 h-24 rounded-full flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 shadow-2xl ${
+              isActive 
+                ? "bg-white/10 border border-white/20 text-white" 
+                : "bg-white text-black shadow-[0_0_50px_rgba(255,255,255,0.15)]"
+            }`}
+          >
+            {isActive ? <Pause size={40} /> : <Play size={40} className="ml-2" fill="currentColor" />}
+          </button>
+
+          <button
+            onClick={resetTimer}
+            className="p-4 rounded-full bg-white/5 text-white/30 hover:bg-white/10 hover:text-white transition-all transform hover:scale-110"
+          >
+            <RotateCcw size={24} />
+          </button>
+        </div>
+      </div>
+
+      {isImmersive && (
+         <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end pointer-events-none">
+            <div>
+               <p className="text-[10px] text-white/20 uppercase tracking-[0.5em] mb-2">Detox immersive</p>
+               <h3 className="text-white/40 text-xl font-light tracking-tight italic">"Stay with the breath."</h3>
+            </div>
+            <button className="p-4 text-white/10 pointer-events-auto hover:text-white/40 transition-colors">
+               <ArrowRight size={20} />
+            </button>
+         </div>
+      )}
+    </div>
+  );
+}
