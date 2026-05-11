@@ -1,0 +1,26 @@
+{
+  "name": "Detox Focus",
+  "short_name": "Detox",
+  "description": "Reclaim your focus with ADHD-optimized tools.",
+  "theme_color": "#0a0f0d",
+  "background_color": "#0a0f0d",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
