@@ -14,46 +14,8 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         injectRegister: 'auto',
-        manifestFilename: 'manifest.json',
-        includeAssets: ['pwa-192x192.png', 'pwa-512x512.png'],
-        manifest: {
-          name: 'Detox Focus',
-          short_name: 'Detox',
-          description: 'Reclaim your focus with ADHD-optimized tools.',
-          theme_color: '#0a0f0d',
-          background_color: '#0a0f0d',
-          display: 'standalone',
-          orientation: 'portrait',
-          start_url: '/',
-          id: '/',
-          scope: '/',
-          icons: [
-            {
-              src: '/pwa-192x192.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any'
-            },
-            {
-              src: '/pwa-192x192.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'maskable'
-            },
-            {
-              src: '/pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any'
-            },
-            {
-              src: '/pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'maskable'
-            }
-          ]
-        },
+        includeAssets: ['pwa-192x192.png', 'pwa-512x512.png', 'manifest.json'],
+        manifest: false,
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         },
