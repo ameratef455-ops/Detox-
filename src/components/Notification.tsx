@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, AlertCircle, Info, X, HelpCircle } from 'lucide-react';
+import { ANIMATION_SPRING } from '../constants';
 
 export type NotificationType = 'success' | 'error' | 'info' | 'confirm';
 
@@ -59,19 +60,20 @@ export default function Notification({
           )}
           
           <motion.div
-            initial={{ y: 100, opacity: 0, scale: 0.9 }}
+            initial={{ y: 20, opacity: 0, scale: 0.95 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 100, opacity: 0, scale: 0.9 }}
+            exit={{ y: 10, opacity: 0, scale: 0.98 }}
+            transition={ANIMATION_SPRING.BOUNCY}
             className={`
               pointer-events-auto
-              w-full max-w-sm overflow-hidden rounded-3xl border shadow-2xl backdrop-blur-md
+              w-full max-w-sm overflow-hidden rounded-[2rem] border shadow-2xl backdrop-blur-xl
               ${colors[type]}
             `}
             dir="rtl"
           >
             <div className="p-6">
               <div className="flex items-start gap-4">
-                <div className="p-2 rounded-xl bg-white/5">
+                <div className="p-3 rounded-2xl bg-white/5">
                   {icons[type]}
                 </div>
                 <div className="flex-1 pt-1">
@@ -80,7 +82,7 @@ export default function Notification({
                   </p>
                 </div>
                 {type !== 'confirm' && (
-                  <button onClick={onClose} className="text-white/20 hover:text-white transition-colors">
+                  <button onClick={onClose} className="p-2 text-white/20 hover:text-white transition-colors">
                     <X size={18} />
                   </button>
                 )}
@@ -93,13 +95,13 @@ export default function Notification({
                         onConfirm?.();
                         onClose();
                     }}
-                    className="flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs uppercase rounded-2xl transition-all"
+                    className="flex-1 py-4 px-4 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-black text-xs uppercase rounded-2xl transition-all"
                   >
                     {confirmText}
                   </button>
                   <button
                     onClick={onClose}
-                    className="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase rounded-2xl border border-white/10 transition-all"
+                    className="flex-1 py-4 px-4 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-white font-bold text-xs uppercase rounded-2xl border border-white/10 transition-all"
                   >
                     {cancelText}
                   </button>

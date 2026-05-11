@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Sliders, MessageSquare, Rocket, Heart, Star, ExternalLink, ChevronDown, Download, Upload, ShieldCheck } from "lucide-react";
+import { ANIMATION_SPRING } from "../constants";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -99,9 +100,10 @@ export default function SettingsModal({
             className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.92, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            exit={{ opacity: 0, scale: 0.95, y: 12 }}
+            transition={ANIMATION_SPRING.SOFT}
             className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0d1512] border border-white/10 rounded-[2.5rem] p-6 md:p-8 shadow-2xl z-[101] flex flex-col max-h-[85vh]"
           >
             <div className="flex items-center justify-between mb-8 shrink-0">
@@ -109,14 +111,15 @@ export default function SettingsModal({
                 <div className="p-2 rounded-xl bg-white/5 text-emerald-400">
                   <Sliders size={20} />
                 </div>
-                <h2 className="text-xl font-medium tracking-tight">Settings</h2>
+                <h2 className="text-xl font-medium tracking-tight text-white">Settings</h2>
               </div>
-              <button 
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
                 onClick={onClose}
                 className="p-2 rounded-full hover:bg-white/5 text-white/40 hover:text-white transition-colors"
               >
                 <X size={20} />
-              </button>
+              </motion.button>
             </div>
 
             <div className="space-y-10 overflow-y-auto pr-2 custom-scrollbar flex-1 pb-4">
@@ -243,15 +246,16 @@ export default function SettingsModal({
                       <p className="text-[10px] font-bold text-emerald-400/60 uppercase tracking-widest mb-1">فودافون كاش (التحويل مباشر):</p>
                       <p className="text-lg font-mono font-black text-white tracking-widest">01282920387</p>
                    </div>
-                   <a 
+                   <motion.a 
+                      whileTap={{ scale: 0.98 }}
                       href="https://wa.me/201282920387" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center space-x-reverse space-x-2 w-full py-3 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-50 transition-all active:scale-95 shadow-lg shadow-emerald-500/10"
+                      className="flex items-center justify-center space-x-reverse space-x-2 w-full py-3 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-500/10"
                    >
                       <MessageSquare size={18} />
                       <span>ابعت السكرين شوت واستلم كود التفعيل</span>
-                   </a>
+                   </motion.a>
                    <p className="text-[8px] text-white/20 text-center uppercase tracking-widest leading-loose">
                       كل كود تفعيل مخصص لجهاز واحد وبيفتح كل المميزات الحالية والمستقبلية للأبد.
                    </p>
@@ -315,11 +319,15 @@ export default function SettingsModal({
 
                   {/* Install App Section - More prominent */}
               <div className="pt-6 border-t border-white/5 space-y-4">
-                 <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Application</label>
+                 <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 text-white">Application</label>
+                    <img src="/pwa-192x192.png" alt="App Icon" className="w-6 h-6 rounded-lg border border-white/10" />
+                 </div>
                  
                  <div className="space-y-3">
                    {/* Open in New Tab Button (Crucial for PWA) */}
-                   <button 
+                   <motion.button 
+                     whileTap={{ scale: 0.98 }}
                      onClick={() => window.open(window.location.href, '_blank')}
                      className="w-full flex items-center justify-between p-5 rounded-3xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all group"
                    >
@@ -333,9 +341,10 @@ export default function SettingsModal({
                          </div>
                       </div>
                       <ChevronDown size={14} className="text-blue-400 -rotate-90 hidden sm:block" />
-                   </button>
+                   </motion.button>
 
-                   <button 
+                   <motion.button 
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         if (onInstall && isInstallable) {
                           onInstall();
@@ -364,7 +373,7 @@ export default function SettingsModal({
                          </div>
                       </div>
                       {isInstallable && <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
-                   </button>
+                   </motion.button>
                  </div>
               </div>
 
@@ -372,9 +381,10 @@ export default function SettingsModal({
               <div className="pt-6 border-t border-white/5 space-y-4">
                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Data Management</label>
                  <div className="flex flex-col space-y-3">
-                    <button 
+                    <motion.button 
+                      whileTap={{ scale: 0.98 }}
                       onClick={exportData}
-                      className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group"
+                      className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group text-white"
                     >
                       <div className="flex items-center space-x-3">
                          <Download size={16} className="text-white/40 group-hover:text-white transition-colors" />
@@ -386,15 +396,18 @@ export default function SettingsModal({
                             <span>Supporter Safe</span>
                           </div>
                       )}
-                    </button>
+                    </motion.button>
                     
-                    <label className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group cursor-pointer">
+                    <motion.label 
+                      whileTap={{ scale: 0.98 }}
+                      className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group cursor-pointer text-white"
+                    >
                       <div className="flex items-center space-x-3">
                          <Upload size={16} className="text-white/40 group-hover:text-white transition-colors" />
                          <span className="text-xs font-bold">Import Backup JSON</span>
                       </div>
                       <input type="file" accept=".json" onChange={importData} className="hidden" />
-                    </label>
+                    </motion.label>
 
                     <p className="text-[8px] text-white/20 uppercase tracking-widest leading-relaxed px-2" dir="rtl">
                        * نسخة الـ JSON بتحفظ كل إعداداتك، عدد القلوب، وحالة الـ Supporter بتاعتك عشان لو مسحت الكاش أو غيرت المتصفح.
@@ -403,7 +416,8 @@ export default function SettingsModal({
               </div>
 
               {/* Rate Us */}
-              <a 
+              <motion.a 
+                whileTap={{ scale: 0.98 }}
                 href="https://forms.gle/FC8RuWBEkR7m5tzt9" 
                 target="_blank" 
                 rel="noopener noreferrer"
@@ -413,21 +427,22 @@ export default function SettingsModal({
                     <div className="p-3 rounded-2xl bg-amber-400/10 text-amber-400 group-hover:bg-amber-400 group-hover:text-black transition-all">
                         <Star size={20} fill="currentColor" />
                     </div>
-                    <div className="text-left">
+                    <div className="text-left text-white">
                         <p className="text-sm font-bold text-white leading-tight">قيم تجربتك</p>
                         <p className="text-[10px] text-white/30 uppercase tracking-widest mt-1">ساعدنا نتحسن</p>
                     </div>
                 </div>
                 <ExternalLink size={16} className="text-white/20 group-hover:text-white transition-colors" />
-              </a>
+              </motion.a>
             </div>
 
-            <button 
+            <motion.button 
+              whileTap={{ scale: 0.96 }}
               onClick={onClose}
-              className="w-full mt-6 py-4 rounded-2xl bg-white text-black font-black tracking-tighter uppercase text-sm hover:bg-emerald-50 transition-all active:scale-95 shrink-0"
+              className="w-full mt-6 py-4 rounded-2xl bg-white text-black font-black tracking-tighter uppercase text-sm hover:bg-emerald-50 transition-all shrink-0"
             >
               Done
-            </button>
+            </motion.button>
           </motion.div>
         </>
       )}

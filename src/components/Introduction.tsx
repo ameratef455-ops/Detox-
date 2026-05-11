@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Sparkles, Target, Volume2, Maximize2, Moon, ArrowRight, Check, Zap } from "lucide-react";
+import { ANIMATION_SPRING } from "../constants";
 
 interface IntroductionProps {
   onComplete: () => void;
@@ -55,38 +56,39 @@ export default function Introduction({ onComplete }: IntroductionProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] bg-[#0a0f0d] flex items-center justify-center font-sans">
+    <div className="fixed inset-0 z-[2000] bg-[#0a0f0d] flex items-center justify-center font-sans overflow-hidden">
       <AnimatePresence mode="wait">
         {showSplash ? (
           <motion.div
             key="splash"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.1 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+            transition={ANIMATION_SPRING.SOFT}
             className="flex flex-col items-center"
           >
             <motion.div
               animate={{ 
-                scale: [1, 1.2, 1],
-                rotate: [0, 10, -10, 0]
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0]
               }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center shadow-[0_0_50px_rgba(52,211,153,0.3)] mb-6"
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center shadow-[0_0_60px_rgba(52,211,153,0.2)] mb-8"
             >
-              <Zap size={40} className="text-white fill-white" />
+              <Zap size={44} className="text-white fill-white" />
             </motion.div>
             <motion.h1 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-4xl font-light tracking-tighter text-white mb-2"
+              initial={{ y: 20, opacity: 0, letterSpacing: "0.5em" }}
+              animate={{ y: 0, opacity: 1, letterSpacing: "0.2em" }}
+              transition={{ delay: 0.3, ...ANIMATION_SPRING.SOFT }}
+              className="text-4xl font-light text-white mb-2"
             >
               DETOX
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.3 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.6 }}
               className="text-[10px] uppercase font-bold tracking-[0.6em] text-white"
             >
               Focus Reclaimed
@@ -95,48 +97,64 @@ export default function Introduction({ onComplete }: IntroductionProps) {
         ) : (
           <motion.div
             key="tutorial"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={ANIMATION_SPRING.SOFT}
             className="w-full max-w-md p-8 flex flex-col items-center text-center"
           >
             <div className="mb-12 flex space-x-2">
               {steps.map((_, i) => (
-                <div 
+                <motion.div 
                   key={i} 
-                  className={`h-1 rounded-full transition-all duration-500 ${i <= currentStep ? "w-8 bg-white" : "w-2 bg-white/10"}`} 
+                  layout
+                  className={`h-1.5 rounded-full ${i <= currentStep ? "bg-white" : "bg-white/10"}`} 
+                  initial={false}
+                  animate={{ 
+                    width: i === currentStep ? 40 : (i < currentStep ? 8 : 8),
+                    opacity: i === currentStep ? 1 : 0.3
+                  }}
+                  transition={ANIMATION_SPRING.SOFT}
                 />
               ))}
             </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="flex flex-col items-center"
-              >
-                <div className="mb-8 p-6 rounded-[2.5rem] bg-white/5 border border-white/5 shadow-2xl">
-                  {steps[currentStep].icon}
-                </div>
-                <h2 className="text-3xl font-light tracking-tight text-white mb-4 italic">
-                  {steps[currentStep].title}
-                </h2>
-                <p className="text-white/40 leading-relaxed max-w-xs mb-12">
-                  {steps[currentStep].desc}
-                </p>
-              </motion.div>
-            </AnimatePresence>
+            <div className="h-[400px] flex items-center justify-center w-full">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentStep}
+                    initial={{ opacity: 0, x: 40, scale: 0.9, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, x: -40, scale: 0.9, filter: "blur(10px)" }}
+                    transition={ANIMATION_SPRING.SOFT}
+                    className="flex flex-col items-center"
+                  >
+                    <div className="mb-8 p-8 rounded-[3rem] bg-white/5 border border-white/5 shadow-2xl relative">
+                      <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full" />
+                      <div className="relative z-10">
+                        {steps[currentStep].icon}
+                      </div>
+                    </div>
+                    <h2 className="text-3xl font-light tracking-tight text-white mb-4 italic">
+                      {steps[currentStep].title}
+                    </h2>
+                    <p className="text-white/40 leading-relaxed max-w-xs font-medium">
+                      {steps[currentStep].desc}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
+            </div>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleNext}
-              className="group flex items-center space-x-3 px-8 py-4 rounded-full bg-white text-black font-black uppercase text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+              className="group flex items-center space-x-3 px-10 py-5 rounded-full bg-white text-black font-black uppercase text-xs tracking-widest transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] mt-8"
             >
               <span>{currentStep === steps.length - 1 ? "Start Flow" : "Continue"}</span>
-              {currentStep === steps.length - 1 ? <Check size={16} /> : <ArrowRight size={16} />}
-            </button>
+              {currentStep === steps.length - 1 ? <Check size={18} /> : <ArrowRight size={18} />}
+            </motion.button>
             
-            <p className="mt-8 text-[9px] text-white/20 uppercase tracking-widest font-medium">
+            <p className="mt-12 text-[9px] text-white/10 uppercase tracking-widest font-bold">
               Made by Amer Atef • V1.0
             </p>
           </motion.div>

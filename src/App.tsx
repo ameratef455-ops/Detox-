@@ -8,6 +8,7 @@ import SettingsModal from "./components/SettingsModal";
 import Introduction from "./components/Introduction";
 import Notification, { NotificationType } from "./components/Notification";
 import { Settings, Zap, Heart, Sparkles, Moon, Brain, PenLine, Volume2, VolumeX } from "lucide-react";
+import { ANIMATION_SPRING } from "./constants";
 
 interface Task {
   id: string;
@@ -168,13 +169,22 @@ export default function App() {
 
       {/* Header */}
       {!isImmersive && (
-        <header className="absolute top-0 left-0 right-0 p-8 flex justify-between items-center z-50">
+        <motion.header 
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={ANIMATION_SPRING.SOFT}
+          className="absolute top-0 left-0 right-0 p-8 flex justify-between items-center z-50"
+        >
           <div className="flex items-center space-x-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-1000 ${currentThemeColor()}`}>
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-1000 ${currentThemeColor()}`}
+            >
               <Zap size={20} className="text-white fill-white" />
-            </div>
+            </motion.div>
             <div>
-              <h1 className="text-xl font-medium tracking-tight leading-none">Detox</h1>
+              <h1 className="text-xl font-medium tracking-tight leading-none text-white">Detox</h1>
               <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mt-1">{appMode} mode</p>
             </div>
           </div>
@@ -182,16 +192,18 @@ export default function App() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 px-4 py-2 rounded-full bg-white/5 border border-white/5 transition-all">
                 <Heart size={16} className={`transition-colors ${hearts > 0 ? "text-red-400 fill-red-400/20" : "text-white/20"}`} />
-                <span className="text-xs font-mono font-bold leading-none">{hearts}</span>
+                <span className="text-xs font-mono font-bold leading-none text-white">{hearts}</span>
             </div>
-            <button 
+            <motion.button 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => setIsSettingsOpen(true)}
                 className="p-3 rounded-full hover:bg-white/10 transition-colors text-white/60 hover:text-white"
             >
               <Settings size={20} />
-            </button>
+            </motion.button>
           </div>
-        </header>
+        </motion.header>
       )}
 
       {/* Main Content */}
@@ -202,6 +214,7 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
+            transition={ANIMATION_SPRING.SOFT}
             className="lg:col-span-4 space-y-8 order-2 lg:order-1"
           >
             {appMode !== "sleep" ? (
@@ -212,7 +225,12 @@ export default function App() {
                     isSessionActive={isSessionActive}
                 />
             ) : (
-                <div className="p-6 rounded-[2rem] bg-indigo-500/5 backdrop-blur-3xl border border-indigo-500/10 space-y-4">
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={ANIMATION_SPRING.GENTLE}
+                    className="p-6 rounded-[2rem] bg-indigo-500/5 backdrop-blur-3xl border border-indigo-500/10 space-y-4"
+                >
                     <div className="flex items-center space-x-2 text-indigo-400 mb-2">
                         <PenLine size={16} />
                         <h2 className="text-[10px] font-bold uppercase tracking-widest">Clear Your Mind</h2>
@@ -228,7 +246,7 @@ export default function App() {
                     {isSessionActive && (
                         <p className="text-[9px] text-indigo-500/40 uppercase tracking-tighter text-center">Your thoughts are fading away...</p>
                     )}
-                </div>
+                </motion.div>
             )}
             
             <AmbientNoise 
@@ -245,7 +263,8 @@ export default function App() {
 
         {/* Center Column: Timer */}
         <motion.div 
-          animate={{ x: isImmersive ? 0 : 0 }}
+          layout
+          transition={ANIMATION_SPRING.SOFT}
           className={`${isImmersive ? "fixed inset-0 z-[100]" : "lg:col-span-8"} flex flex-col items-center order-1 lg:order-2`}
         >
           <FocusTimer 
@@ -261,7 +280,14 @@ export default function App() {
           />
           
           {!isImmersive && (
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
+            <motion.div 
+              initial="initial"
+              animate="animate"
+              variants={{
+                animate: { transition: { staggerChildren: 0.1 } }
+              }}
+              className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl"
+            >
                <FocusFeature 
                   icon={appMode === 'sleep' ? <Moon size={18} /> : <Brain size={18} />} 
                   title={appMode === 'sleep' ? "Dark Therapy" : "ADHD Optimized"} 
@@ -280,7 +306,7 @@ export default function App() {
                   desc="Works continuously in the background." 
                   accent={currentAccent()}
                />
-            </div>
+            </motion.div>
           )}
         </motion.div>
       </main>
@@ -292,6 +318,7 @@ export default function App() {
             initial={{ opacity: 0, y: 50, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.8 }}
+            transition={ANIMATION_SPRING.BOUNCY}
             className={`fixed bottom-24 left-1/2 -translate-x-1/2 px-6 py-4 rounded-3xl text-white shadow-2xl flex items-center space-x-3 z-[1000] pointer-events-none ${currentThemeColor()}`}
           >
             <Sparkles size={20} className="animate-pulse" />
@@ -323,23 +350,31 @@ export default function App() {
       
       {/* Immersive Minimize Overlay */}
       {isImmersive && (
-          <button 
+          <motion.button 
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => setIsImmersive(false)}
             className="fixed top-8 right-8 z-[1001] p-4 rounded-full bg-white/5 text-white/20 hover:text-white hover:bg-white/10 transition-all backdrop-blur-xl border border-white/5"
           >
             <Minimize size={24} />
-          </button>
+          </motion.button>
       )}
 
       {/* Status Bar */}
       {!isImmersive && (
         <footer className="fixed bottom-0 left-0 right-0 p-8 flex flex-col items-center space-y-4 pointer-events-none">
-          <p className="text-[9px] uppercase tracking-[0.4em] text-white/20 bg-black/40 backdrop-blur-2xl px-6 py-2.5 rounded-full border border-white/5 font-bold">
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={ANIMATION_SPRING.GENTLE}
+            className="text-[9px] uppercase tracking-[0.4em] text-white/20 bg-black/40 backdrop-blur-2xl px-6 py-2.5 rounded-full border border-white/5 font-bold"
+          >
             {isSessionActive ? `Current session active • ${appMode}` : "System Ready • Awaiting Intent"}
-          </p>
+          </motion.p>
           <div className="flex flex-col items-center opacity-30">
-            <p className="text-[8px] uppercase tracking-[0.2em] font-medium">Made by Amer Atef with love</p>
-            <p className="text-[8px] font-mono mt-1">V1.0 🎉</p>
+            <p className="text-[8px] uppercase tracking-[0.2em] font-medium text-white">Made by Amer Atef with love</p>
+            <p className="text-[8px] font-mono mt-1 text-white">V1.0 🎉</p>
           </div>
         </footer>
       )}
@@ -349,13 +384,20 @@ export default function App() {
 
 function FocusFeature({ icon, title, desc, accent }: any) {
   return (
-    <div className="p-5 rounded-[2rem] bg-white/5 border border-white/5 hover:border-white/10 transition-all group">
+    <motion.div 
+      variants={{
+        initial: { opacity: 0, y: 10 },
+        animate: { opacity: 1, y: 0 }
+      }}
+      transition={ANIMATION_SPRING.SOFT}
+      className="p-5 rounded-[2rem] bg-white/5 border border-white/5 hover:border-white/10 transition-all group"
+    >
       <div className={`w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center transition-colors mb-4 ${accent}`}>
         {icon}
       </div>
       <h4 className="text-sm font-bold text-white tracking-tight group-hover:translate-x-0.5 transition-transform mb-1">{title}</h4>
       <p className="text-[11px] text-white/30 leading-relaxed font-medium">{desc}</p>
-    </div>
+    </motion.div>
   );
 }
 

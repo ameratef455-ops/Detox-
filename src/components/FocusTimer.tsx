@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Play, Pause, RotateCcw, Coffee, Focus, Maximize2, Minimize2, Moon, Sun, ArrowRight } from "lucide-react";
+import { Play, Pause, RotateCcw, Maximize2, Minimize2, Moon, ArrowRight } from "lucide-react";
+import { ANIMATION_SPRING } from "../constants";
 
 export type AppMode = "focus" | "break" | "sleep";
 
@@ -103,7 +104,7 @@ export default function FocusTimer({
       endTimeRef.current = null;
       workerRef.current?.postMessage('stop');
     }
-  }, [isActive]); // Note: DO NOT include timeLeft in deps, we only want to set endTimeRef when isActive goes from false to true
+  }, [isActive]); 
 
   const toggleTimer = () => setIsActive(!isActive);
 
@@ -121,7 +122,6 @@ export default function FocusTimer({
       playAlert();
       onSessionComplete(mode);
       
-      // Auto-transition
       if (mode === "focus") {
         onModeChange("break");
       } else if (mode === "break") {
@@ -153,9 +153,10 @@ export default function FocusTimer({
   };
 
   return (
-    <div className={`relative transition-all duration-1000 ${isImmersive ? "fixed inset-0 z-[100] bg-black flex items-center justify-center" : "w-full"}`}>
-      
-      {/* Background Glow for Immersive Mode */}
+    <motion.div 
+      layout
+      className={`relative transition-all duration-1000 ${isImmersive ? "fixed inset-0 z-[100] bg-black flex items-center justify-center p-0" : "w-full"}`}
+    >
       <AnimatePresence>
         {isImmersive && (
           <motion.div
@@ -177,48 +178,56 @@ export default function FocusTimer({
         )}
       </AnimatePresence>
 
-      <div className={`flex flex-col items-center justify-center space-y-12 p-12 transition-all duration-700 ${isImmersive ? "scale-125" : "rounded-[3rem] bg-white/5 backdrop-blur-3xl border border-white/10"}`}>
-        
-        {/* Mode Selector */}
-        <div className="flex bg-white/5 p-1 rounded-full border border-white/5">
+      <motion.div 
+        layout
+        transition={ANIMATION_SPRING.SOFT}
+        className={`flex flex-col items-center justify-center space-y-12 p-8 md:p-12 transition-all duration-700 ${isImmersive ? "scale-110 md:scale-125" : "rounded-[3rem] bg-white/5 backdrop-blur-3xl border border-white/10"}`}
+      >
+        <div className="flex bg-white/5 p-1 rounded-full border border-white/5 relative">
           {(["focus", "break", "sleep"] as AppMode[]).map((m) => (
-            <button
+            <motion.button
               key={m}
+              whileTap={{ scale: 0.95 }}
               onClick={() => { onModeChange(m); setIsActive(false); }}
-              className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+              className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all relative z-10 ${
                 mode === m 
-                  ? "bg-white text-black shadow-lg" 
+                  ? "text-black" 
                   : "text-white/30 hover:text-white/60"
               }`}
             >
               {m === "sleep" ? <Moon size={14} className="inline mr-1" /> : null}
               {m}
-            </button>
+              {mode === m && (
+                <motion.div 
+                  layoutId="mode-pill"
+                  className="absolute inset-0 bg-white rounded-full -z-10 shadow-lg"
+                  transition={ANIMATION_SPRING.SOFT}
+                />
+              )}
+            </motion.button>
           ))}
         </div>
 
-        {/* Timer Circle */}
-        <div className="relative flex items-center justify-center w-80 h-80 group">
+        <div className="relative flex items-center justify-center w-64 h-64 md:w-80 md:h-80 group">
           <svg className="w-full h-full transform -rotate-90 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.05)]">
             <circle
-              cx="160"
-              cy="160"
-              r="150"
+              cx="50%"
+              cy="50%"
+              r="45%"
               stroke="currentColor"
               strokeWidth="2"
               fill="transparent"
               className="text-white/5"
             />
             <motion.circle
-              cx="160"
-              cy="160"
-              r="150"
+              cx="50%"
+              cy="50%"
+              r="45%"
               stroke="currentColor"
               strokeWidth="4"
               fill="transparent"
-              strokeDasharray={2 * Math.PI * 150}
-              initial={{ strokeDashoffset: 0 }}
-              animate={{ strokeDashoffset: (1 - progress) * (2 * Math.PI * 150) }}
+              pathLength="1"
+              style={{ pathLength: progress }}
               transition={{ duration: 1, ease: "linear" }}
               className={getThemeColor()}
             />
@@ -229,7 +238,7 @@ export default function FocusTimer({
                key={timeLeft}
                initial={{ y: 5, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
-               className="text-8xl font-thin tracking-tighter text-white font-mono"
+               className="text-6xl md:text-8xl font-thin tracking-tighter text-white font-mono"
             >
               {formatTime(timeLeft)}
             </motion.div>
@@ -240,47 +249,63 @@ export default function FocusTimer({
           </div>
         </div>
 
-        {/* Controls */}
         <div className="flex items-center space-x-10">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
+            whileTap={{ scale: 0.9 }}
             onClick={onToggleImmersive}
-            className="p-4 rounded-full bg-white/5 text-white/30 hover:bg-white/10 hover:text-white transition-all transform hover:scale-110"
+            className="p-4 rounded-full bg-white/5 text-white/30 hover:text-white transition-all transform"
             title="Focus Mode"
           >
             {isImmersive ? <Minimize2 size={24} /> : <Maximize2 size={24} />}
-          </button>
+          </motion.button>
           
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
             onClick={toggleTimer}
-            className={`w-24 h-24 rounded-full flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 shadow-2xl ${
+            className={`w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center transition-all transform shadow-2xl ${
               isActive 
                 ? "bg-white/10 border border-white/20 text-white" 
                 : "bg-white text-black shadow-[0_0_50px_rgba(255,255,255,0.15)]"
             }`}
           >
-            {isActive ? <Pause size={40} /> : <Play size={40} className="ml-2" fill="currentColor" />}
-          </button>
+            {isActive ? <Pause size={32} /> : <Play size={32} className="ml-2" fill="currentColor" />}
+          </motion.button>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
+            whileTap={{ scale: 0.9 }}
             onClick={resetTimer}
-            className="p-4 rounded-full bg-white/5 text-white/30 hover:bg-white/10 hover:text-white transition-all transform hover:scale-110"
+            className="p-4 rounded-full bg-white/5 text-white/30 hover:text-white transition-all transform"
           >
             <RotateCcw size={24} />
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      {isImmersive && (
-         <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end pointer-events-none">
+      <AnimatePresence>
+        {isImmersive && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={ANIMATION_SPRING.GENTLE}
+            className="absolute bottom-12 left-12 right-12 flex justify-between items-end pointer-events-none"
+          >
             <div>
                <p className="text-[10px] text-white/20 uppercase tracking-[0.5em] mb-2">Detox immersive</p>
                <h3 className="text-white/40 text-xl font-light tracking-tight italic">"Stay with the breath."</h3>
             </div>
-            <button className="p-4 text-white/10 pointer-events-auto hover:text-white/40 transition-colors">
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              className="p-4 text-white/10 pointer-events-auto hover:text-white/40 transition-colors"
+            >
                <ArrowRight size={20} />
-            </button>
-         </div>
-      )}
-    </div>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
